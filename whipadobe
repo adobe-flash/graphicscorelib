@@ -1,0 +1,75 @@
+From 484f5d7f1217dbbe5a39ef0aaed20f9370123f42 Mon Sep 17 00:00:00 2001
+From: Mayank Bhagya <mbhagya@adobe.com>
+Date: Sun, 19 Apr 2015 14:49:13 +0530
+Subject: [PATCH 1/2] Description: Renaming DXT1 and DXT5 samplers to
+ COMPRESSED and COMPRESSEDALPHA respectively
+
+Docs changed: None
+Dev/QA notes: None
+Bugs fixed: None
+Reviewer: @govindag
+---
+ src/com/adobe/utils/v3/AGALMiniAssembler.as | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/com/adobe/utils/v3/AGALMiniAssembler.as b/src/com/adobe/utils/v3/AGALMiniAssembler.as
+index 8effbb9..1b55d4d 100644
+--- a/src/com/adobe/utils/v3/AGALMiniAssembler.as
++++ b/src/com/adobe/utils/v3/AGALMiniAssembler.as
+@@ -527,8 +527,8 @@ package com.adobe.utils.v3
+ 		
+ 			
+ 			SAMPLEMAP[ RGBA ]		= new Sampler( RGBA,		SAMPLER_TYPE_SHIFT,			0 );
+-			SAMPLEMAP[ DXT1 ]		= new Sampler( DXT1,		SAMPLER_TYPE_SHIFT,			1 );
+-			SAMPLEMAP[ DXT5 ]		= new Sampler( DXT5,		SAMPLER_TYPE_SHIFT,			2 );
++			SAMPLEMAP[ COMPRESSED ]		= new Sampler( COMPRESSED,		SAMPLER_TYPE_SHIFT,			1 );
++			SAMPLEMAP[ COMPRESSEDALPHA ]		= new Sampler( COMPRESSEDALPHA,		SAMPLER_TYPE_SHIFT,			2 );
+ 			SAMPLEMAP[ VIDEO ]		= new Sampler( VIDEO,		SAMPLER_TYPE_SHIFT,			3 );
+ 			SAMPLEMAP[ D2 ]			= new Sampler( D2,			SAMPLER_DIM_SHIFT,			0 );
+ 			SAMPLEMAP[ D3 ]			= new Sampler( D3,			SAMPLER_DIM_SHIFT,			2 );
+@@ -670,8 +670,8 @@ package com.adobe.utils.v3
+ 		private static const REPEAT_U_CLAMP_V:String			= "repeat_u_clamp_v"; //Introduced by Flash 13
+ 		private static const CLAMP_U_REPEAT_V:String			= "clamp_u_repeat_v"; //Introduced by Flash 13
+ 		private static const RGBA:String						= "rgba";
+-		private static const DXT1:String						= "dxt1";
+-		private static const DXT5:String						= "dxt5";
++		private static const COMPRESSED:String						= "compressed";
++		private static const COMPRESSEDALPHA:String					= "compressedalpha";
+ 		private static const VIDEO:String						= "video";
+ 	}
+ }
+
+From b230ab9cd62c58a5aee5f218958028f2223b635f Mon Sep 17 00:00:00 2001
+From: Mayank Bhagya <mbhagya@adobe.com>
+Date: Mon, 27 Apr 2015 12:31:16 +0530
+Subject: [PATCH 2/2] Description: Re-adding 'DXT1' and 'DXT5' samplers for
+ backward compatibility sake
+
+Bugs fixed: None
+Reviewer: @govindag
+---
+ src/com/adobe/utils/v3/AGALMiniAssembler.as | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/com/adobe/utils/v3/AGALMiniAssembler.as b/src/com/adobe/utils/v3/AGALMiniAssembler.as
+index 1b55d4d..7e10e21 100644
+--- a/src/com/adobe/utils/v3/AGALMiniAssembler.as
++++ b/src/com/adobe/utils/v3/AGALMiniAssembler.as
+@@ -529,6 +529,8 @@ package com.adobe.utils.v3
+ 			SAMPLEMAP[ RGBA ]		= new Sampler( RGBA,		SAMPLER_TYPE_SHIFT,			0 );
+ 			SAMPLEMAP[ COMPRESSED ]		= new Sampler( COMPRESSED,		SAMPLER_TYPE_SHIFT,			1 );
+ 			SAMPLEMAP[ COMPRESSEDALPHA ]		= new Sampler( COMPRESSEDALPHA,		SAMPLER_TYPE_SHIFT,			2 );
++			SAMPLEMAP[ DXT1 ]		= new Sampler( DXT1,		SAMPLER_TYPE_SHIFT,			1 );
++			SAMPLEMAP[ DXT5 ]		= new Sampler( DXT5,		SAMPLER_TYPE_SHIFT,			2 );
+ 			SAMPLEMAP[ VIDEO ]		= new Sampler( VIDEO,		SAMPLER_TYPE_SHIFT,			3 );
+ 			SAMPLEMAP[ D2 ]			= new Sampler( D2,			SAMPLER_DIM_SHIFT,			0 );
+ 			SAMPLEMAP[ D3 ]			= new Sampler( D3,			SAMPLER_DIM_SHIFT,			2 );
+@@ -672,6 +674,8 @@ package com.adobe.utils.v3
+ 		private static const RGBA:String						= "rgba";
+ 		private static const COMPRESSED:String						= "compressed";
+ 		private static const COMPRESSEDALPHA:String					= "compressedalpha";
++		private static const DXT1:String						= "dxt1";
++		private static const DXT5:String						= "dxt5";
+ 		private static const VIDEO:String						= "video";
+ 	}
+ }
