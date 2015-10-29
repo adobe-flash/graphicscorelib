@@ -31,24 +31,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package com.adobe.utils.extended
 {
-	// ===========================================================================
-	//	Imports
-	// ---------------------------------------------------------------------------
 	import flash.display3D.*;
 	import flash.utils.*;
 	
-	// ===========================================================================
-	//	Class
-	// ---------------------------------------------------------------------------
 	public class AGALMiniAssembler
-	{		// ======================================================================
-		//	Constants
-		// ----------------------------------------------------------------------				
+	{
 		protected static const REGEXP_OUTER_SPACES:RegExp		= /^\s+|\s+$/g;
 		
-		// ======================================================================
-		//	Properties
-		// ----------------------------------------------------------------------
 		// AGAL bytes and error buffer 
 		private var _agalcode:ByteArray							= null;
 		private var _error:String								= "";
@@ -58,24 +47,15 @@ package com.adobe.utils.extended
 		private static var initialized:Boolean					= false;
 		public var verbose:Boolean								= false;
 		
-		// ======================================================================
-		//	Getters
-		// ----------------------------------------------------------------------
 		public function get error():String						{ return _error; }
 		public function get agalcode():ByteArray				{ return _agalcode; }
 		
-		// ======================================================================
-		//	Constructor
-		// ----------------------------------------------------------------------
 		public function AGALMiniAssembler( debugging:Boolean = false ):void
 		{
 			debugEnabled = debugging;
 			if ( !initialized )
 				init();
 		}
-		// ======================================================================
-		//	Methods
-		// ----------------------------------------------------------------------
 		
 		public function assemble2( ctx3d : Context3D, version:uint, vertexsrc:String, fragmentsrc:String ) : Program3D 
 		{
@@ -553,9 +533,6 @@ package com.adobe.utils.extended
 			SAMPLEMAP[ REPEAT_U_CLAMP_V ]	= new Sampler( REPEAT_U_CLAMP_V, SAMPLER_REPEAT_SHIFT, 3 );
 		}
 		
-		// ======================================================================
-		//	Constants
-		// ----------------------------------------------------------------------
 		private static const OPMAP:Dictionary					= new Dictionary();
 		private static const REGMAP:Dictionary					= new Dictionary();
 		private static const SAMPLEMAP:Dictionary				= new Dictionary();
@@ -676,130 +653,80 @@ package com.adobe.utils.extended
 	}
 }
 
-// ================================================================================
-//	Helper Classes
-// --------------------------------------------------------------------------------
+class OpCode
+{		
+	private var _emitCode:uint;
+	private var _flags:uint;
+	private var _name:String;
+	private var _numRegister:uint;
+	
+	public function get emitCode():uint		{ return _emitCode; }
+	public function get flags():uint		{ return _flags; }
+	public function get name():String		{ return _name; }
+	public function get numRegister():uint	{ return _numRegister; }
+	
+	public function OpCode( name:String, numRegister:uint, emitCode:uint, flags:uint)
+	{
+		_name = name;
+		_numRegister = numRegister;
+		_emitCode = emitCode;
+		_flags = flags;
+	}		
+	
+	public function toString():String
+	{
+		return "[OpCode name=\""+_name+"\", numRegister="+_numRegister+", emitCode="+_emitCode+", flags="+_flags+"]";
+	}
+}
+
+class Register
 {
-	// ===========================================================================
-	//	Class
-	// ---------------------------------------------------------------------------
-	class OpCode
-	{		
-		// ======================================================================
-		//	Properties
-		// ----------------------------------------------------------------------
-		private var _emitCode:uint;
-		private var _flags:uint;
-		private var _name:String;
-		private var _numRegister:uint;
-		
-		// ======================================================================
-		//	Getters
-		// ----------------------------------------------------------------------
-		public function get emitCode():uint		{ return _emitCode; }
-		public function get flags():uint		{ return _flags; }
-		public function get name():String		{ return _name; }
-		public function get numRegister():uint	{ return _numRegister; }
-		
-		// ======================================================================
-		//	Constructor
-		// ----------------------------------------------------------------------
-		public function OpCode( name:String, numRegister:uint, emitCode:uint, flags:uint)
-		{
-			_name = name;
-			_numRegister = numRegister;
-			_emitCode = emitCode;
-			_flags = flags;
-		}		
-		
-		// ======================================================================
-		//	Methods
-		// ----------------------------------------------------------------------
-		public function toString():String
-		{
-			return "[OpCode name=\""+_name+"\", numRegister="+_numRegister+", emitCode="+_emitCode+", flags="+_flags+"]";
-		}
+	private var _emitCode:uint;
+	private var _name:String;
+	private var _longName:String;
+	private var _flags:uint;
+	private var _range:uint;
+	
+	public function get emitCode():uint		{ return _emitCode; }
+	public function get longName():String	{ return _longName; }
+	public function get name():String		{ return _name; }
+	public function get flags():uint		{ return _flags; }
+	public function get range():uint		{ return _range; }
+	
+	public function Register( name:String, longName:String, emitCode:uint, range:uint, flags:uint)
+	{
+		_name = name;
+		_longName = longName;
+		_emitCode = emitCode;
+		_range = range;
+		_flags = flags;
 	}
 	
-	// ===========================================================================
-	//	Class
-	// ---------------------------------------------------------------------------
-	class Register
+	public function toString():String
 	{
-		// ======================================================================
-		//	Properties
-		// ----------------------------------------------------------------------
-		private var _emitCode:uint;
-		private var _name:String;
-		private var _longName:String;
-		private var _flags:uint;
-		private var _range:uint;
-		
-		// ======================================================================
-		//	Getters
-		// ----------------------------------------------------------------------
-		public function get emitCode():uint		{ return _emitCode; }
-		public function get longName():String	{ return _longName; }
-		public function get name():String		{ return _name; }
-		public function get flags():uint		{ return _flags; }
-		public function get range():uint		{ return _range; }
-		
-		// ======================================================================
-		//	Constructor
-		// ----------------------------------------------------------------------
-		public function Register( name:String, longName:String, emitCode:uint, range:uint, flags:uint)
-		{
-			_name = name;
-			_longName = longName;
-			_emitCode = emitCode;
-			_range = range;
-			_flags = flags;
-		}
-		
-		// ======================================================================
-		//	Methods
-		// ----------------------------------------------------------------------
-		public function toString():String
-		{
-			return "[Register name=\""+_name+"\", longName=\""+_longName+"\", emitCode="+_emitCode+", range="+_range+", flags="+ _flags+"]";
-		}
+		return "[Register name=\""+_name+"\", longName=\""+_longName+"\", emitCode="+_emitCode+", range="+_range+", flags="+ _flags+"]";
+	}
+}
+
+class Sampler
+{
+	private var _flag:uint;
+	private var _mask:uint;
+	private var _name:String;
+	
+	public function get flag():uint		{ return _flag; }
+	public function get mask():uint		{ return _mask; }
+	public function get name():String	{ return _name; }
+	
+	public function Sampler( name:String, flag:uint, mask:uint )
+	{
+		_name = name;
+		_flag = flag;
+		_mask = mask;
 	}
 	
-	// ===========================================================================
-	//	Class
-	// ---------------------------------------------------------------------------
-	class Sampler
+	public function toString():String
 	{
-		// ======================================================================
-		//	Properties
-		// ----------------------------------------------------------------------
-		private var _flag:uint;
-		private var _mask:uint;
-		private var _name:String;
-		
-		// ======================================================================
-		//	Getters
-		// ----------------------------------------------------------------------
-		public function get flag():uint		{ return _flag; }
-		public function get mask():uint		{ return _mask; }
-		public function get name():String	{ return _name; }
-		
-		// ======================================================================
-		//	Constructor
-		// ----------------------------------------------------------------------
-		public function Sampler( name:String, flag:uint, mask:uint )
-		{
-			_name = name;
-			_flag = flag;
-			_mask = mask;
-		}
-		
-		// ======================================================================
-		//	Methods
-		// ----------------------------------------------------------------------
-		public function toString():String
-		{
-			return "[Sampler name=\""+_name+"\", flag=\""+_flag+"\", mask="+mask+"]";
-		}
+		return "[Sampler name=\""+_name+"\", flag=\""+_flag+"\", mask="+mask+"]";
 	}
 }
