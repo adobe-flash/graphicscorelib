@@ -700,9 +700,9 @@ class Sampler
 {
 	public function Sampler(name:String, flag:uint, mask:uint)
 	{
-		_name = name;
-		_flag = flag;
-		_mask = mask;
+		this.name = name;
+		this.flag = flag;
+		this.mask = mask;
 	}
 	
 	public var name:String;
