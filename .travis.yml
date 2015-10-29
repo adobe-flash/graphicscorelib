@@ -42,6 +42,5 @@ before_script:
     - export AIR_HOME="$TRAVIS_BUILD_DIR/air_sdk"
     # permissions
     - chmod +x flex_sdk/bin/mxmlc
-    - cp build.properties.sample build.properties
 script:
     - ant
