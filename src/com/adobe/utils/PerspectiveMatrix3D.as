@@ -193,7 +193,7 @@ package com.adobe.utils
 			this.copyRawDataFrom(Vector.<Number>([
 				2.0/width, 0.0, 0.0, 0.0,
 				0.0, 2.0/height, 0.0, 0.0,
-				0.0, 0.0, 1.0/(zNear-zNear), 0.0,
+				0.0, 0.0, 1.0/(zNear-zFar), 0.0,
 				0.0, 0.0, zNear/(zNear-zFar), 1.0
 			]));
 		}
@@ -206,9 +206,9 @@ package com.adobe.utils
 										 zFar:Number):void {
 			this.copyRawDataFrom(Vector.<Number>([
 				2.0/(right-left), 0.0, 0.0, 0.0,
-				0.0, 2.0*zNear/(top-bottom), 0.0, 0.0,
-				-1.0-2.0*left/(right-left), 1.0+2.0*top/(bottom-top), 1.0/(zFar-zNear), 0.0,
-				0.0, 0.0, zNear/(zNear-zFar), 1.0
+				0.0, 2.0/(top-bottom), 0.0, 0.0,
+				0.0, 0.0, 1.0/(zFar-zNear), 0.0,
+				(left+right)/(left-right), (bottom+top)/(bottom-top), zNear/(zNear-zFar), 1.0
 			]));
 		}
 
@@ -220,9 +220,9 @@ package com.adobe.utils
 										 zFar:Number):void {
 			this.copyRawDataFrom(Vector.<Number>([
 				2.0/(right-left), 0.0, 0.0, 0.0,
-				0.0, 2.0*zNear/(top-bottom), 0.0, 0.0,
-				-1.0-2.0*left/(right-left), 1.0+2.0*top/(bottom-top), 1.0/(zNear-zFar), 0.0,
-				0.0, 0.0, zNear/(zNear-zFar), 1.0
+				0.0, 2.0/(top-bottom), 0.0, 0.0,
+				0.0, 0.0, 1.0/(zNear-zFar), 0.0,
+				(left+right)/(left-right), (bottom+top)/(bottom-top), zNear/(zNear-zFar), 1.0
 			]));
 		}
 
