@@ -41,10 +41,21 @@ package com.adobe.utils.extended
 	//	Class
 	// ---------------------------------------------------------------------------
 	public class AGALMiniAssembler
-	{		// ======================================================================
-		//	Constants
-		// ----------------------------------------------------------------------				
-		protected static const REGEXP_OUTER_SPACES:RegExp		= /^\s+|\s+$/g;
+	{	
+		protected static const REGEXP_OUTER_SPACES:RegExp = /^\s+|\s+$/g;
+		protected static const REGEXP_LINES:RegExp = /[\f\n\r\v]+/g;
+		protected static const REGEXP_OPTSI:RegExp = /<.*>/g;
+		protected static const REGEXP_OPTS:RegExp = /([\w\.\-\+]+)/gi;
+		protected static const REGEXP_OPCODE:RegExp = /^\w{3}/ig;
+		protected static const REGEXP_REGS_VOF_ACOSTDIP:RegExp = /vc\[([vof][acostdip]?)(\d*)?(\.[xyzw](\+\d{1,3})?)?\](\.[xyzw]{1,4})?|([vof][acostdip]?)(\d*)?(\.[xyzw]{1,4})?/gi;
+		protected static const REGEXP_RELREG:RegExp = /\[.*\]/ig;
+		protected static const REGEXP_RES:RegExp = /^\b[A-Za-z]{1,2}/ig;
+		protected static const REGEXP_NUMBER:RegExp = /\d+/;
+		protected static const REGEXP_MASKMATCH:RegExp = /(\.[xyzw]{1,4})/;
+		protected static const REGEXP_RELNAME:RegExp = /[A-Za-z]{1,2}/ig;
+		protected static const REGEXP_SELMATCH:RegExp = /(\.[xyzw]{1,1})/;
+		protected static const REGEXP_RELOFS:RegExp = /\+\d{1,3}/ig;
+		protected static const X_CHAR_CODE:Number = "x".charCodeAt(0);
 		
 		// ======================================================================
 		//	Properties
@@ -88,7 +99,7 @@ package com.adobe.utils.extended
 		
 		public function assemble( mode:String, source:String, version:uint=1, ignorelimits:Boolean=false ):ByteArray
 		{
-			var start:uint = getTimer();
+			var start:uint = verbose ? getTimer() : 0;
 			
 			_agalcode							= new ByteArray();
 			_error = "";
@@ -108,7 +119,7 @@ package com.adobe.utils.extended
 			
 			initregmap(version, ignorelimits); 
 			
-			var lines:Array = source.replace( /[\f\n\r\v]+/g, "\n" ).split( "\n" );
+			var lines:Array = source.replace(REGEXP_LINES, "\n" ).split( "\n" );
 			var nest:int = 0;
 			var nops:int = 0;
 			var i:int;
@@ -116,7 +127,7 @@ package com.adobe.utils.extended
 			
 			for ( i = 0; i < lng && _error == ""; i++ )
 			{
-				var line:String = new String( lines[i] );
+				var line:String = lines[i];
 				line = line.replace( REGEXP_OUTER_SPACES, "" );
 				
 				// remove comments
@@ -125,16 +136,16 @@ package com.adobe.utils.extended
 					line = line.slice( 0, startcomment );
 				
 				// grab options
-				var optsi:int = line.search( /<.*>/g );
+				var optsi:int = line.search(REGEXP_OPTSI);
 				var opts:Array;
 				if ( optsi != -1 )
 				{
-					opts = line.slice( optsi ).match( /([\w\.\-\+]+)/gi );
+					opts = line.slice( optsi ).match(REGEXP_OPTS);
 					line = line.slice( 0, optsi );
 				}
 				
 				// find opcode
-				var opCode:Array = line.match( /^\w{3}/ig );
+				var opCode:Array = line.match(REGEXP_OPCODE);
 				if ( !opCode ) 
 				{
 					if ( line.length >= 3 )
@@ -189,7 +200,7 @@ package com.adobe.utils.extended
 				var regs:Array;
 				
 				// will match both syntax
-				regs = line.match( /vc\[([vof][acostdip]?)(\d*)?(\.[xyzw](\+\d{1,3})?)?\](\.[xyzw]{1,4})?|([vof][acostdip]?)(\d*)?(\.[xyzw]{1,4})?/gi );
+				regs = line.match(REGEXP_REGS_VOF_ACOSTDIP);
 				
 				if ( !regs || regs.length != opFound.numRegister )
 				{
@@ -204,7 +215,7 @@ package com.adobe.utils.extended
 				for ( var j:int = 0; j < regLength; j++ )
 				{
 					var isRelative:Boolean = false;
-					var relreg:Array = regs[ j ].match( /\[.*\]/ig );
+					var relreg:Array = regs[ j ].match(REGEXP_RELREG);
 					if ( relreg && relreg.length > 0 )
 					{
 						regs[ j ] = regs[ j ].replace( relreg[ 0 ], "0" );
@@ -214,7 +225,7 @@ package com.adobe.utils.extended
 						isRelative = true;
 					}
 					
-					var res:Array = regs[j].match( /^\b[A-Za-z]{1,2}/ig );
+					var res:Array = regs[j].match(REGEXP_RES);
 					if ( !res ) 
 					{
 						_error = "error: could not parse operand "+j+" ("+regs[j]+").";
@@ -261,7 +272,7 @@ package com.adobe.utils.extended
 					
 					regs[j] = regs[j].slice( regs[j].search( regFound.name ) + regFound.name.length );
 					//trace( "REGNUM: " +regs[j] );
-					var idxmatch:Array = isRelative ? relreg[0].match( /\d+/ ) : regs[j].match( /\d+/ );
+					var idxmatch:Array = isRelative ? relreg[0].match(REGEXP_NUMBER) : regs[j].match(REGEXP_NUMBER);
 					var regidx:uint = 0;
 					
 					if ( idxmatch )
@@ -275,7 +286,7 @@ package com.adobe.utils.extended
 					}
 					
 					var regmask:uint		= 0;
-					var maskmatch:Array		= regs[j].match( /(\.[xyzw]{1,4})/ );
+					var maskmatch:Array		= regs[j].match(REGEXP_MASKMATCH);
 					var isDest:Boolean		= ( j == 0 && !( opFound.flags & OP_NO_DEST ) );
 					var isSampler:Boolean	= ( j == 2 && ( opFound.flags & OP_SPECIAL_TEX ) );
 					var reltype:uint		= 0;
@@ -296,7 +307,7 @@ package com.adobe.utils.extended
 						var maskLength:uint = maskmatch[0].length;
 						for ( var k:int = 1; k < maskLength; k++ )
 						{
-							cv = maskmatch[0].charCodeAt(k) - "x".charCodeAt(0);
+							cv = maskmatch[0].charCodeAt(k) - X_CHAR_CODE;
 							if ( cv > 2 )
 								cv = 3;
 							if ( isDest )
@@ -315,7 +326,7 @@ package com.adobe.utils.extended
 					
 					if ( isRelative )
 					{
-						var relname:Array = relreg[0].match( /[A-Za-z]{1,2}/ig );						
+						var relname:Array = relreg[0].match(REGEXP_RELREG);						
 						var regFoundRel:Register = REGMAP[ relname[0]];						
 						if ( regFoundRel == null )
 						{ 
@@ -324,7 +335,7 @@ package com.adobe.utils.extended
 							break;
 						}
 						reltype = regFoundRel.emitCode;
-						var selmatch:Array = relreg[0].match( /(\.[xyzw]{1,1})/ );						
+						var selmatch:Array = relreg[0].match(REGEXP_SELMATCH);						
 						if ( selmatch.length==0 )
 						{
 							_error = "error: bad index register select"; 
@@ -334,7 +345,7 @@ package com.adobe.utils.extended
 						relsel = selmatch[0].charCodeAt(1) - "x".charCodeAt(0);
 						if ( relsel > 2 )
 							relsel = 3; 
-						var relofs:Array = relreg[0].match( /\+\d{1,3}/ig );
+						var relofs:Array = relreg[0].match(REGEXP_RELOFS);
 						if ( relofs.length > 0 ) 
 							reloffset = relofs[0]; 						
 						if ( reloffset < 0 || reloffset > 255 )
@@ -381,7 +392,7 @@ package com.adobe.utils.extended
 								{
 									if ( optfound.flag != SAMPLER_SPECIAL_SHIFT )
 										samplerbits &= ~( 0xf << optfound.flag );										
-									samplerbits |= uint( optfound.mask ) << uint( optfound.flag );
+									samplerbits |= optfound.mask << optfound.flag;
 								}
 							}
 							agalcode.writeShort( regidx );
@@ -676,130 +687,65 @@ package com.adobe.utils.extended
 	}
 }
 
-// ================================================================================
-//	Helper Classes
-// --------------------------------------------------------------------------------
+class OpCode
+{		
+	public var emitCode:uint;
+	public var flags:uint;
+	public var name:String;
+	public var numRegister:uint;
+	
+	public function OpCode( name:String, numRegister:uint, emitCode:uint, flags:uint)
+	{
+		this.name = name;
+		this.numRegister = numRegister;
+		this.emitCode = emitCode;
+		this.flags = flags;
+	}		
+	
+	public function toString():String
+	{
+		return "[OpCode name=\"" + name+"\", numRegister=" + numRegister + ", emitCode=" + emitCode+", flags=" + flags + "]";
+	}
+}
+
+class Register
 {
-	// ===========================================================================
-	//	Class
-	// ---------------------------------------------------------------------------
-	class OpCode
-	{		
-		// ======================================================================
-		//	Properties
-		// ----------------------------------------------------------------------
-		private var _emitCode:uint;
-		private var _flags:uint;
-		private var _name:String;
-		private var _numRegister:uint;
-		
-		// ======================================================================
-		//	Getters
-		// ----------------------------------------------------------------------
-		public function get emitCode():uint		{ return _emitCode; }
-		public function get flags():uint		{ return _flags; }
-		public function get name():String		{ return _name; }
-		public function get numRegister():uint	{ return _numRegister; }
-		
-		// ======================================================================
-		//	Constructor
-		// ----------------------------------------------------------------------
-		public function OpCode( name:String, numRegister:uint, emitCode:uint, flags:uint)
-		{
-			_name = name;
-			_numRegister = numRegister;
-			_emitCode = emitCode;
-			_flags = flags;
-		}		
-		
-		// ======================================================================
-		//	Methods
-		// ----------------------------------------------------------------------
-		public function toString():String
-		{
-			return "[OpCode name=\""+_name+"\", numRegister="+_numRegister+", emitCode="+_emitCode+", flags="+_flags+"]";
-		}
+	public var emitCode:uint;
+	public var longName:String;
+	public var name:String;
+	public var flags:uint;
+	public var range:uint;
+	
+	public function Register( name:String, longName:String, emitCode:uint, range:uint, flags:uint)
+	{
+		this.name = name;
+		this.longName = longName;
+		this.emitCode = emitCode;
+		this.range = range;
+		this.flags = flags;
 	}
 	
-	// ===========================================================================
-	//	Class
-	// ---------------------------------------------------------------------------
-	class Register
+	public function toString():String
 	{
-		// ======================================================================
-		//	Properties
-		// ----------------------------------------------------------------------
-		private var _emitCode:uint;
-		private var _name:String;
-		private var _longName:String;
-		private var _flags:uint;
-		private var _range:uint;
-		
-		// ======================================================================
-		//	Getters
-		// ----------------------------------------------------------------------
-		public function get emitCode():uint		{ return _emitCode; }
-		public function get longName():String	{ return _longName; }
-		public function get name():String		{ return _name; }
-		public function get flags():uint		{ return _flags; }
-		public function get range():uint		{ return _range; }
-		
-		// ======================================================================
-		//	Constructor
-		// ----------------------------------------------------------------------
-		public function Register( name:String, longName:String, emitCode:uint, range:uint, flags:uint)
-		{
-			_name = name;
-			_longName = longName;
-			_emitCode = emitCode;
-			_range = range;
-			_flags = flags;
-		}
-		
-		// ======================================================================
-		//	Methods
-		// ----------------------------------------------------------------------
-		public function toString():String
-		{
-			return "[Register name=\""+_name+"\", longName=\""+_longName+"\", emitCode="+_emitCode+", range="+_range+", flags="+ _flags+"]";
-		}
+		return "[Register name=\"" + name + "\", longName=\"" + longName + "\", emitCode=" + emitCode + ", range=" + range + ", flags=" + flags + "]";
+	}
+}
+
+class Sampler
+{
+	public var flag:uint;
+	public var mask:uint;
+	public var name:String;
+	
+	public function Sampler( name:String, flag:uint, mask:uint )
+	{
+		this.name = name;
+		this.flag = flag;
+		this.mask = mask;
 	}
 	
-	// ===========================================================================
-	//	Class
-	// ---------------------------------------------------------------------------
-	class Sampler
+	public function toString():String
 	{
-		// ======================================================================
-		//	Properties
-		// ----------------------------------------------------------------------
-		private var _flag:uint;
-		private var _mask:uint;
-		private var _name:String;
-		
-		// ======================================================================
-		//	Getters
-		// ----------------------------------------------------------------------
-		public function get flag():uint		{ return _flag; }
-		public function get mask():uint		{ return _mask; }
-		public function get name():String	{ return _name; }
-		
-		// ======================================================================
-		//	Constructor
-		// ----------------------------------------------------------------------
-		public function Sampler( name:String, flag:uint, mask:uint )
-		{
-			_name = name;
-			_flag = flag;
-			_mask = mask;
-		}
-		
-		// ======================================================================
-		//	Methods
-		// ----------------------------------------------------------------------
-		public function toString():String
-		{
-			return "[Sampler name=\""+_name+"\", flag=\""+_flag+"\", mask="+mask+"]";
-		}
+		return "[Sampler name=\"" + name + "\", flag=\"" + flag + "\", mask=" + mask + "]";
 	}
 }
